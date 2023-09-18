@@ -22,7 +22,7 @@ jobs:
 
     - name: build and publish Docker Image
       run: |
-        cd github-runner/
-        docker build -t ghracr.azurecr.io/github-runner:v1
-        docker push ghracr.azurecr.io/github-runner:v1 
+        cd ${{ github.workspace }}/github-runner/
+        docker build -t ggracr.azurecr.io/github-runner:v1
+        docker push ggracr.azurecr.io/github-runner:v1 
 
