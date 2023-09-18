@@ -1,0 +1,28 @@
+name: Build and Publish GitHub Runner Docker Image
+
+on:
+  workflow_dispatch:
+
+env:
+  AZURE_RG: gh-actions-test
+  AZURE_LOCATION: westus2
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: build and publish Docker Image
+      run: |
+        cd github-runner/
+        docker build -t ghracr.azurecr.io/github-runner:v1
+        docker push ghracr.azurecr.io/github-runner:v1 
+
