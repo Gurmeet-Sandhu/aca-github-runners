@@ -5,6 +5,7 @@ on:
 
 jobs:
   testRunner:
+    runs-on: [self-hosted]
     steps:
       - uses: actions/checkout@v2
       - name: Display az CLI version
