@@ -1,4 +1,4 @@
-name: Build and Publish GitHub Runner module
+name: Deploy Azure Container Apps Github Runner
 
 on:
   workflow_dispatch:

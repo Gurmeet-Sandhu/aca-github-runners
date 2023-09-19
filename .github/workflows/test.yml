@@ -1,0 +1,12 @@
+name: Azure container apps self hosted runner test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  testRunner:
+    steps:
+      - uses: actions/checkout@v2
+      - name: Display az CLI version
+        run: |
+          az --version

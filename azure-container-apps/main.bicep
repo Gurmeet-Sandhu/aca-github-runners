@@ -3,16 +3,20 @@ param location string = 'westus2'
 // param environmentId string
 
 @secure()
-param pat string = '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'
-param environmentName string = 'gha-runner-env'
-param workspaceName string = 'gha-runner-ws'
-param workspaceLocation string = 'westus2'
+param pat string = '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'
+// param environmentName string = 'gha-runner-env'
+// param workspaceName string = 'gha-runner-ws'
+// param workspaceLocation string = 'westus2'
+
+var repos = [
+  'aca-github-runners'
+]
 
 resource name_resource 'Microsoft.App/containerApps@2023-05-01' = {
   name: name
   location: location
   properties: {
-    environmentId: environment.id
+    environmentId: '/subscriptions/34176af6-6df0-47ef-a8cb-99f46d66332c/resourceGroups/aca-ghr-test/providers/Microsoft.App/managedEnvironments/gha-runner-env'
     configuration: {
       secrets: [
         {
@@ -65,6 +69,25 @@ resource name_resource 'Microsoft.App/containerApps@2023-05-01' = {
       ]
       scale: {
         minReplicas: 1
+        // maxReplicas: 5
+        // rules: [
+        //   {
+        //     custom:{
+        //       auth: [
+        //         {
+        //           secretRef: 'pat'
+        //           triggerParameter: 'personalAccessToken'
+        //         }
+        //       ]
+        //       metadata: {
+        //         owner: 'Gurmeet-Sandhu'
+        //         runnerScope: 'repo'
+        //         repos : repos
+        //       }
+        //       type: 'github-runner'
+        //     }
+        //   }
+        // ]
       }
     }
   }
@@ -73,33 +96,33 @@ resource name_resource 'Microsoft.App/containerApps@2023-05-01' = {
   ]
 }
 
-resource environment 'Microsoft.App/managedEnvironments@2023-05-01' = {
-  name: environmentName
-  location: location
-  properties: {
-    appLogsConfiguration: {
-      destination: 'log-analytics'
-      logAnalyticsConfiguration: {
-        customerId: reference('Microsoft.OperationalInsights/workspaces/${workspaceName}', '2022-10-01').customerId
-        sharedKey: listKeys('Microsoft.OperationalInsights/workspaces/${workspaceName}', '2022-10-01').primarySharedKey
-      }
-    }
-  }
-  dependsOn: [
-    workspace
-  ]
-}
+// resource environment 'Microsoft.App/managedEnvironments@2023-05-01' = {
+//   name: environmentName
+//   location: location
+//   properties: {
+//     appLogsConfiguration: {
+//       destination: 'log-analytics'
+//       logAnalyticsConfiguration: {
+//         customerId: reference('Microsoft.OperationalInsights/workspaces/${workspaceName}', '2022-10-01').customerId
+//         sharedKey: listKeys('Microsoft.OperationalInsights/workspaces/${workspaceName}', '2022-10-01').primarySharedKey
+//       }
+//     }
+//   }
+//   dependsOn: [
+//     workspace
+//   ]
+// }
 
-resource workspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
-  name: workspaceName
-  location: workspaceLocation
-  properties: {
-    sku: {
-      name: 'PerGB2018'
-    }
-    retentionInDays: 30
-    workspaceCapping: {
-    }
-  }
-  dependsOn: []
-}
+// resource workspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
+//   name: workspaceName
+//   location: workspaceLocation
+//   properties: {
+//     sku: {
+//       name: 'PerGB2018'
+//     }
+//     retentionInDays: 30
+//     workspaceCapping: {
+//     }
+//   }
+//   dependsOn: []
+// }
