@@ -1,0 +1,32 @@
+name: Build and Publish GitHub Runner module
+
+on:
+  workflow_dispatch:
+
+env:
+  AZURE_RG: gh-actions-test
+  AZURE_LOCATION: westus2
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: install bicep CLI
+      run: |
+        curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+        chmod +x ./bicep
+        sudo mv ./bicep /usr/local/bin/bicep
+
+    - name: build and publish template
+      run: |
+        az bicep publish --file .azure-container-apps/main.bicep --target br:ggracr.azurecr.io/bicep/modules/aca-gh-runner:v1 --force
+
