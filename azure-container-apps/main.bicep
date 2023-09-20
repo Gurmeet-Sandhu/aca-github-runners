@@ -3,7 +3,7 @@ param location string = 'westus2'
 // param environmentId string
 
 @secure()
-param pat string = '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'
+param pat string = ''
 // param environmentName string = 'gha-runner-env'
 // param workspaceName string = 'gha-runner-ws'
 // param workspaceLocation string = 'westus2'
@@ -62,8 +62,8 @@ resource name_resource 'Microsoft.App/containerApps@2023-05-01' = {
             }
           ]
           resources: {
-              cpu: json('0.25')
-              memory: '.5Gi'
+              cpu: json('1.0')
+              memory: '2.0Gi'
           }
       }
       ]
