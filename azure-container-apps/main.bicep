@@ -3,14 +3,17 @@ param location string = 'westus2'
 // param environmentId string
 
 @secure()
-param pat string = ''
+param pat string
+
+@secure()
+param registry_password string
 // param environmentName string = 'gha-runner-env'
 // param workspaceName string = 'gha-runner-ws'
 // param workspaceLocation string = 'westus2'
 
-var repos = [
-  'aca-github-runners'
-]
+// var repos = [
+//   'aca-github-runners'
+// ]
 
 resource name_resource 'Microsoft.App/containerApps@2023-05-01' = {
   name: name
@@ -25,7 +28,7 @@ resource name_resource 'Microsoft.App/containerApps@2023-05-01' = {
         }
         {
           name: 'registry-password'
-          value: 'ErHnhc8d18ASOMphNRbrVJsLZcRmqX+dJBfVUPuPzT+ACRAKo3ST'
+          value: registry_password
         }
       ]
       registries: [
