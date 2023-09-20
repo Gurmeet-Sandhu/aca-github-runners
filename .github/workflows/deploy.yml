@@ -26,7 +26,7 @@ jobs:
         chmod +x ./bicep
         sudo mv ./bicep /usr/local/bin/bicep
 
-    - name: build and publish template
+    - name: deploy container apps
       run: |
-        az bicep publish --file .azure-container-apps/main.bicep --target br:ggracr.azurecr.io/bicep/modules/aca-gh-runner:v1 --force
+        az deployment group create -g aca-ghr-test -f ./azure-container-apps/main.bicep -p pat=${{secrets.PAT}} registry_password=${{REG_PASSWORD}}
 
