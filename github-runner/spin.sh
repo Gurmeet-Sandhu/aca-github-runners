@@ -6,11 +6,11 @@ PAT=$PAT
 RUNNER_NAME="RUNNER-$(hostname)"
 TOKEN=$(curl -sX POST -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${PAT}" https://api.github.com/repos/${GHUSER}/${REPO}/actions/runners/registration-token | jq .token --raw-output)
 cd /home/docker/actions-runner
-./config.sh --unattended --url https://github.com/${GHUSER}/${REPO} --token ${TOKEN} --name ${RUNNER_NAME} --ephemeral --disableupdate
+./config.sh --unattended --url https://github.com/${GHUSER}/${REPO} --token ${TOKEN} --name ${RUNNER_NAME} --disableupdate
 
 cleanup() {
     echo "Removing runner..."
-    ./config.sh remove --unattended --token ${TOKEN}
+    ./config.sh remove --token ${TOKEN}
 }
 
 trap 'cleanup; exit 130' INT
