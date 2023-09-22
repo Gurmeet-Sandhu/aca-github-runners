@@ -48,7 +48,7 @@ resource name_resource 'Microsoft.App/containerApps@2023-05-01' = {
       containers: [
         {
           name: 'gh-runner-image'
-          image: 'ggracr.azurecr.io/github-runner:v2'
+          image: 'ggracr.azurecr.io/github-runner:v3'
           command: []
           env: [
             {
