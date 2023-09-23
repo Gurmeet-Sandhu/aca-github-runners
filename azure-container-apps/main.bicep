@@ -19,7 +19,7 @@ resource name_resource 'Microsoft.App/containerApps@2023-05-01' = {
   name: name
   location: location
   properties: {
-    environmentId: environment.id
+    environmentId: '/subscriptions/34176af6-6df0-47ef-a8cb-99f46d66332c/resourceGroups/aca-ghr-test/providers/Microsoft.App/managedEnvironments/gha-runner-env'
     configuration: {
       secrets: [
         {
@@ -39,10 +39,6 @@ resource name_resource 'Microsoft.App/containerApps@2023-05-01' = {
         }
       ]
       activeRevisionsMode: 'Single'
-      ingress: {
-        external: false
-        targetPort: 80
-      }
     }
     template: {
       containers: [
@@ -99,33 +95,33 @@ resource name_resource 'Microsoft.App/containerApps@2023-05-01' = {
   ]
 }
 
-resource environment 'Microsoft.App/managedEnvironments@2023-05-01' = {
-  name: environmentName
-  location: location
-  properties: {
-    appLogsConfiguration: {
-      destination: 'log-analytics'
-      logAnalyticsConfiguration: {
-        customerId: reference('Microsoft.OperationalInsights/workspaces/${workspaceName}', '2022-10-01').customerId
-        sharedKey: listKeys('Microsoft.OperationalInsights/workspaces/${workspaceName}', '2022-10-01').primarySharedKey
-      }
-    }
-  }
-  dependsOn: [
-    workspace
-  ]
-}
+// resource environment 'Microsoft.App/managedEnvironments@2023-05-01' = {
+//   name: environmentName
+//   location: location
+//   properties: {
+//     appLogsConfiguration: {
+//       destination: 'log-analytics'
+//       logAnalyticsConfiguration: {
+//         customerId: reference('Microsoft.OperationalInsights/workspaces/${workspaceName}', '2022-10-01').customerId
+//         sharedKey: listKeys('Microsoft.OperationalInsights/workspaces/${workspaceName}', '2022-10-01').primarySharedKey
+//       }
+//     }
+//   }
+//   dependsOn: [
+//     workspace
+//   ]
+// }
 
-resource workspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
-  name: workspaceName
-  location: workspaceLocation
-  properties: {
-    sku: {
-      name: 'PerGB2018'
-    }
-    retentionInDays: 30
-    workspaceCapping: {
-    }
-  }
-  dependsOn: []
-}
+// resource workspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
+//   name: workspaceName
+//   location: workspaceLocation
+//   properties: {
+//     sku: {
+//       name: 'PerGB2018'
+//     }
+//     retentionInDays: 30
+//     workspaceCapping: {
+//     }
+//   }
+//   dependsOn: []
+// }
