@@ -40,8 +40,7 @@ resource name_resource 'Microsoft.App/containerApps@2023-05-01' = {
       ]
       activeRevisionsMode: 'Single'
       ingress: {
-        external: true
-        targetPort: 80
+        external: false
       }
     }
     template: {
