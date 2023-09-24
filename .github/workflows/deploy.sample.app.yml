@@ -1,0 +1,32 @@
+name: Deploy Sample Node.js App
+
+on:
+  workflow_dispatch:
+
+env:
+  AZURE_RG: aca-ghr-test
+  AZURE_LOCATION: westus2
+
+jobs:
+  deploy:
+    runs-on: [self-hosted]
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: install bicep CLI
+      run: |
+        curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+        chmod +x ./bicep
+        sudo mv ./bicep /usr/local/bin/bicep
+
+    - name: deploy container apps
+      run: |
+        az deployment group create -g aca-ghr-test -f ./sample-web-app/main.bicep
+
