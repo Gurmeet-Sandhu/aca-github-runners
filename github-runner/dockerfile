@@ -26,6 +26,10 @@ COPY config-tool.sh /home/docker/
 RUN chmod +x /home/docker/config-tool.sh
 RUN /home/docker/config-tool.sh
 
+RUN usermod -aG sudo docker
+
+RUN echo '%sudo ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
+
 RUN cd /home/docker && mkdir actions-runner && cd actions-runner \
     && curl -O -L https://github.com/actions/runner/releases/download/v2.309.0/actions-runner-linux-x64-2.309.0.tar.gz \
     && tar xzf ./actions-runner-linux-x64-2.309.0.tar.gz
