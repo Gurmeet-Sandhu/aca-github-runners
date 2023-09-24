@@ -20,12 +20,6 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: install bicep CLI
-      run: |
-        curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
-        chmod +x ./bicep
-        sudo mv ./bicep /usr/local/bin/bicep
-
     - name: deploy container apps
       run: |
         az deployment group create -g aca-ghr-test -f ./sample-web-app/main.bicep
