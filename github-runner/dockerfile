@@ -21,6 +21,10 @@ RUN apt-get install -y --no-install-recommends \
     python3-dev \
     python3-pip \
     sudo
+
+RUN curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64 \
+    && chmod +x ./bicep \
+    && mv ./bicep /usr/local/bin/bicep
     
 RUN useradd -m runner
 
@@ -29,7 +33,6 @@ RUN chmod +x /home/runner/config-tool.sh
 RUN /home/runner/config-tool.sh
 
 RUN usermod -aG sudo runner
-RUN usermod -aG docker runner
 
 RUN echo '%sudo ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers
 
