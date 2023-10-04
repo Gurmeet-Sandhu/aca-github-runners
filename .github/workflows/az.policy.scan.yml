@@ -26,7 +26,13 @@ jobs:
         chmod +x ./bicep
         sudo mv ./bicep /usr/local/bin/bicep
 
+    - name: Check for resource compliance
+      uses: azure/policy-compliance-scan@v0
+      with:
+        scopes: |
+          /subscriptions/34176af6-6df0-47ef-a8cb-99f46d66332c/resourceGroups/aca-ghr-test
+
     - name: deploy container apps
       run: |
-        az deployment group create -g aca-ghr-test -f ./az-policy-scan/vm.bicep -p adminPassword=${{secrets.adminPassword}}
+        az deployment group create -g aca-ghr-test -f ./az-policy-scan/vm.bicep -p adminPassword=${{secrets.ADMIN_PASSWORD}}
 
