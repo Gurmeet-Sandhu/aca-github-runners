@@ -1,4 +1,4 @@
-name: Deploy VM
+name: Azure Policy Scan
 
 on:
   workflow_dispatch:
