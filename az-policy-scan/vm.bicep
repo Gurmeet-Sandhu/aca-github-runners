@@ -1,5 +1,6 @@
-param vmName string = 'test'
-param adminUsername string = 'test'
+param vmName string = 'testVM'
+@secure()
+param adminUsername string
 @secure()
 param adminPassword string
 

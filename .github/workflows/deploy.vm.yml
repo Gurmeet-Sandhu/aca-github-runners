@@ -28,4 +28,4 @@ jobs:
 
     - name: deploy VM
       run: |
-        az deployment group create -g aca-ghr-test -f ./az-policy-scan/vm.bicep -p adminPassword=${{secrets.ADMIN_PASSWORD}}
+        az deployment group create -g aca-ghr-test -f ./az-policy-scan/vm.bicep -p adminUsername=${{secrets.ADMIN_USERNAME}} adminPassword=${{secrets.ADMIN_PASSWORD}}
