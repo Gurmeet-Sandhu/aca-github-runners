@@ -23,6 +23,5 @@ jobs:
     - name: Check for resource compliance
       uses: Gurmeet-Sandhu/aca-github-runners/actions/azure-policy-scan@main
       with:
-        scopes: |
-          /subscriptions/34176af6-6df0-47ef-a8cb-99f46d66332c/resourceGroups/aca-ghr-test
+        scopes: /subscriptions/34176af6-6df0-47ef-a8cb-99f46d66332c/resourceGroups/aca-ghr-test
         report-name: test-report
