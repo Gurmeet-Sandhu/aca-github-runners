@@ -1,0 +1,36 @@
+name: 'Azure Policy Scan'
+description: 'Reusable Azure Policy Scan Workflow'
+inputs:
+  scopes:
+    description: 'Full identifier of one or more azure reources, resource groups and subscription to be scanned for compliance'
+    required: true
+  scopes-ignore:
+    description: 'Full identifier of one or more azure resources, resource groups and subscription to be ignored for compliance scan'
+    required: false
+  policy-assignment-ignore:
+    description: 'Full identifier for one or more policy assignment ids for which compliance state will be ignored'
+    required: false
+  report-name:
+    description: 'The filename for the CSV containing a list of resources that are non-compliant after triggered scan is completed'
+outputs:
+  random-number:
+    description: "Random number"
+    value: ${{ steps.random-number-generator.outputs.random-number }}
+runs:
+  using: "composite"
+  steps:
+    # Azure Login       
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{secrets.AZURE_CREDENTIALS}} 
+    
+    - name: Check for resource compliance
+      uses: azure/policy-compliance-scan@v0
+      with:
+        scopes: |
+          ${{ inputs.scopes}}
+
+
+
+        

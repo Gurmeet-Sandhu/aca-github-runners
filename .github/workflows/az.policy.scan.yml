@@ -20,19 +20,9 @@ jobs:
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-    - name: install bicep CLI
-      run: |
-        curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
-        chmod +x ./bicep
-        sudo mv ./bicep /usr/local/bin/bicep
-
-    - name: deploy VM
-      run: |
-        az deployment group create -g aca-ghr-test -f ./az-policy-scan/vm.bicep -p adminPassword=${{secrets.ADMIN_PASSWORD}}
-
     - name: Check for resource compliance
-      uses: azure/policy-compliance-scan@v0
+      uses: actions/azure-policy-scan@main
       with:
         scopes: |
           /subscriptions/34176af6-6df0-47ef-a8cb-99f46d66332c/resourceGroups/aca-ghr-test
-        skip-report: true
+        report-name: test-report

@@ -1,0 +1,31 @@
+name: Deploy VM
+
+on:
+  workflow_dispatch:
+
+env:
+  AZURE_RG: aca-ghr-test
+  AZURE_LOCATION: westus2
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Login to Azure
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+    - name: install bicep CLI
+      run: |
+        curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
+        chmod +x ./bicep
+        sudo mv ./bicep /usr/local/bin/bicep
+
+    - name: deploy VM
+      run: |
+        az deployment group create -g aca-ghr-test -f ./az-policy-scan/vm.bicep -p adminPassword=${{secrets.ADMIN_PASSWORD}}
