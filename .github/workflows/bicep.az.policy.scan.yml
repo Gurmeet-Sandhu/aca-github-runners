@@ -1,0 +1,22 @@
+name: Bicep Compliance Scan against Azure Policy
+on:
+  workflow_dispatch
+
+jobs:
+  Scan Bicep against Azure Policy:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run Policy Scan
+        shell: pwsh
+        run: |
+          cd ${{github.workspace}}\PSRule
+          Install-Module Az -Scope CurrentUser
+          Install-Module PSRule.Rules.Azure -Scope CurrentUser -AllowPrerelease
+          Install-Module EnterprisePolicyAsCode -Scope CurrentUser
+      
+          Export-AzPolicyResources -DefinitionsRootFolder .\ -Mode psrule -OutputFolder .\
+          Export-AzPolicyAssignmentRuleData -AssignmentFile .\psrule.assignment.json -OutputPath .\ps-rule
+
+          Assert-PSRule -InputPath ..\az-policy-scan\ -Module "PSRule.Rules.Azure" -Format File

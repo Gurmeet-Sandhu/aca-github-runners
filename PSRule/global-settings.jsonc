@@ -1,0 +1,12 @@
+{
+    "$schema": "https://raw.githubusercontent.com/Azure/enterprise-azure-policy-as-code/main/Schemas/global-settings-schema.json",
+    "pacOwnerId": "2ab423a7-e6db-4ad1-9605-7629f1b4b4e6",
+    "pacEnvironments": [
+        {
+            "pacSelector": "psrule",
+            "cloud": "AzureCloud",
+            "tenantId": "f9e0ca1c-4a3c-4955-a7cf-a0fb217ff2d0", // Update with your tenant Id
+            "deploymentRootScope": "/subscriptions/34176af6-6df0-47ef-a8cb-99f46d66332c" // Update with the scope your resources will be deployed at
+        }
+    ]
+}
