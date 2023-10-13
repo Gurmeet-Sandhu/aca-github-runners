@@ -2,23 +2,32 @@ name: Bicep Compliance Scan against Azure Policy
 on:
   workflow_dispatch
 
+env:
+  PASSWORD: ${{secrets.AZ_POLICY_SCAN_SECRET}}
+
 jobs:
   bicep-scan:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v2
 
-      - name: Login to Azure
-        uses: azure/login@v1
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+      # - name: Login to Azure
+      #   uses: azure/login@v1
+      #   with:
+      #     creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Run Policy Scan
         shell: pwsh
         run: |
-          Install-Module -Name Az -Scope CurrentUser -Force -AllowClobber
+          Install-Module -Name Az -Force -AllowClobber -Scope CurrentUser
           Install-Module -Name PSRule.Rules.Azure -Scope CurrentUser -AllowPrerelease -Force -AllowClobber
           Install-Module -Name EnterprisePolicyAsCode -Scope CurrentUser -Force -AllowClobber
+
+          $SecurePassword = ConvertTo-SecureString -String ${{env.PASSWORD}} -AsPlainText -Force
+          $TenantId = 'f9e0ca1c-4a3c-4955-a7cf-a0fb217ff2d0'
+          $ApplicationId = '6774373f-ced0-4f58-8d07-25ac9fcda614'
+          $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $ApplicationId, $SecurePassword
+          Connect-AzAccount -ServicePrincipal -TenantId $TenantId -Credential $Credential
 
           cd ${{github.workspace}}\PSRule
       
