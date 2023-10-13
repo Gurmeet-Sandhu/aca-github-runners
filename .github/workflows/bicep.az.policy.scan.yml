@@ -11,9 +11,9 @@ jobs:
       - name: Run Policy Scan
         shell: pwsh
         run: |
-          Install-Module -Name Az -Scope CurrentUser - Force -AllowClobber
-          Install-Module -Name PSRule.Rules.Azure -Scope CurrentUser -AllowPrerelease - Force -AllowClobber
-          Install-Module -Name EnterprisePolicyAsCode -Scope CurrentUser - Force -AllowClobber
+          Install-Module -Name Az -Scope CurrentUser -Force -AllowClobber
+          Install-Module -Name PSRule.Rules.Azure -Scope CurrentUser -AllowPrerelease -Force -AllowClobber
+          Install-Module -Name EnterprisePolicyAsCode -Scope CurrentUser -Force -AllowClobber
 
           cd ${{github.workspace}}\PSRule
       
