@@ -11,10 +11,11 @@ jobs:
       - name: Run Policy Scan
         shell: pwsh
         run: |
-          cd ${{github.workspace}}\PSRule
           Install-Module Az -Scope CurrentUser
           Install-Module PSRule.Rules.Azure -Scope CurrentUser -AllowPrerelease
           Install-Module EnterprisePolicyAsCode -Scope CurrentUser
+
+          cd ${{github.workspace}}\PSRule
       
           Export-AzPolicyResources -DefinitionsRootFolder .\ -Mode psrule -OutputFolder .\
           Export-AzPolicyAssignmentRuleData -AssignmentFile .\psrule.assignment.json -OutputPath .\ps-rule
