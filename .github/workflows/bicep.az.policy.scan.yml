@@ -36,11 +36,11 @@ jobs:
 
       #     Assert-PSRule -InputPath ..\az-policy-scan\ -Module "PSRule.Rules.Azure" -Format File
 
-      - name: Login via Az module
-        uses: azure/login@v1
-        with:
-          creds: ${{secrets.AZURE_CREDENTIALS}}
-          enable-AzPSSession: true 
+      # - name: Login via Az module
+      #   uses: azure/login@v1
+      #   with:
+      #     creds: ${{secrets.AZURE_CREDENTIALS}}
+      #     enable-AzPSSession: true 
           
       - name: Run Azure PowerShell script
         uses: azure/powershell@v1
@@ -49,6 +49,11 @@ jobs:
             Install-Module Az.ResourceGraph -Force -Verbose
             Install-Module PSRule.Rules.Azure -Scope CurrentUser -AllowPrerelease -Force -Verbose
             Install-Module EnterprisePolicyAsCode -Scope CurrentUser -Force -Verbose
+            $SecurePassword = ConvertTo-SecureString -String ${{env.PASSWORD}} -AsPlainText -Force
+            $TenantId = 'f9e0ca1c-4a3c-4955-a7cf-a0fb217ff2d0'
+            $ApplicationId = '6774373f-ced0-4f58-8d07-25ac9fcda614'
+            $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $ApplicationId, $SecurePassword
+            Connect-AzAccount -ServicePrincipal -TenantId $TenantId -Credential $Credential
             Export-AzPolicyResources -DefinitionsRootFolder ./ -Mode psrule -OutputFolder ./
             Export-AzPolicyAssignmentRuleData -AssignmentFile ./psrule.assignment.json -OutputPath ./.ps-rule/policy-rules.Rule.jsonc -ErrorAction SilentlyContinue
             Assert-PSRule -InputPath ./ -Module "PSRule.Rules.Azure" -Format File -OutputFormat NUnit3 -OutputPath results.xml -ErrorAction SilentlyContinue
