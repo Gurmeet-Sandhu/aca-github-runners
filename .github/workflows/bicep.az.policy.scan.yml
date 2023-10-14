@@ -46,6 +46,7 @@ jobs:
         uses: azure/powershell@v1
         with:
           inlineScript: |
+            Install-Module Az -Force -Verbose
             Install-Module Az.ResourceGraph -Force -Verbose
             Install-Module PSRule.Rules.Azure -Scope CurrentUser -AllowPrerelease -Force -Verbose
             Install-Module EnterprisePolicyAsCode -Scope CurrentUser -Force -Verbose
@@ -56,5 +57,5 @@ jobs:
             Connect-AzAccount -ServicePrincipal -TenantId $TenantId -Credential $Credential
             Export-AzPolicyResources -DefinitionsRootFolder ./ -Mode psrule -OutputFolder ./
             Export-AzPolicyAssignmentRuleData -AssignmentFile ./psrule.assignment.json -OutputPath ./.ps-rule/policy-rules.Rule.jsonc -ErrorAction SilentlyContinue
-            Assert-PSRule -InputPath ./ -Module "PSRule.Rules.Azure" -Format File -OutputFormat NUnit3 -OutputPath results.xml -ErrorAction SilentlyContinue
+            Assert-PSRule -InputPath ./ -Module "PSRule.Rules.Azure" -Format File -OutputFormat Csv -OutputPath exceptions.csv -ErrorAction SilentlyContinue
           azPSVersion: "latest"
