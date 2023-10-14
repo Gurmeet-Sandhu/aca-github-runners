@@ -7,7 +7,7 @@ env:
 
 jobs:
   bicep-scan:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
@@ -16,22 +16,40 @@ jobs:
       #   with:
       #     creds: ${{ secrets.AZURE_CREDENTIALS }}
 
-      - name: Run Policy Scan
-        shell: pwsh
-        run: |
-          Install-Module -Name Az -Force -AllowClobber -Scope CurrentUser
-          Install-Module -Name PSRule.Rules.Azure -Scope CurrentUser -AllowPrerelease -Force -AllowClobber
-          Install-Module -Name EnterprisePolicyAsCode -Scope CurrentUser -Force -AllowClobber
+      # - name: Run Policy Scan
+      #   shell: pwsh
+      #   run: |
+      #     Install-Module -Name Az -Force -AllowClobber -Scope CurrentUser
+      #     Install-Module -Name PSRule.Rules.Azure -Scope CurrentUser -AllowPrerelease -Force -AllowClobber
+      #     Install-Module -Name EnterprisePolicyAsCode -Scope CurrentUser -Force -AllowClobber
 
-          $SecurePassword = ConvertTo-SecureString -String ${{env.PASSWORD}} -AsPlainText -Force
-          $TenantId = 'f9e0ca1c-4a3c-4955-a7cf-a0fb217ff2d0'
-          $ApplicationId = '6774373f-ced0-4f58-8d07-25ac9fcda614'
-          $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $ApplicationId, $SecurePassword
-          Connect-AzAccount -ServicePrincipal -TenantId $TenantId -Credential $Credential
+      #     $SecurePassword = ConvertTo-SecureString -String ${{env.PASSWORD}} -AsPlainText -Force
+      #     $TenantId = 'f9e0ca1c-4a3c-4955-a7cf-a0fb217ff2d0'
+      #     $ApplicationId = '6774373f-ced0-4f58-8d07-25ac9fcda614'
+      #     $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $ApplicationId, $SecurePassword
+      #     Connect-AzAccount -ServicePrincipal -TenantId $TenantId -Credential $Credential
 
-          cd ${{github.workspace}}\PSRule
+      #     cd ${{github.workspace}}\PSRule
       
-          Export-AzPolicyResources -DefinitionsRootFolder .\ -Mode psrule -OutputFolder .\
-          Export-AzPolicyAssignmentRuleData -AssignmentFile .\psrule.assignment.json -OutputPath .\ps-rule
+      #     Export-AzPolicyResources -DefinitionsRootFolder .\ -Mode psrule -OutputFolder .\
+      #     Export-AzPolicyAssignmentRuleData -AssignmentFile .\psrule.assignment.json -OutputPath .\ps-rule
 
-          Assert-PSRule -InputPath ..\az-policy-scan\ -Module "PSRule.Rules.Azure" -Format File
+      #     Assert-PSRule -InputPath ..\az-policy-scan\ -Module "PSRule.Rules.Azure" -Format File
+
+      - name: Login via Az module
+        uses: azure/login@v1
+        with:
+          creds: ${{secrets.AZURE_CREDENTIALS}}
+          enable-AzPSSession: true 
+          
+      - name: Run Azure PowerShell script
+        uses: azure/powershell@v1
+        with:
+          inlineScript: |
+            Install-Module Az.ResourceGraph -Force -Verbose
+            Install-Module PSRule.Rules.Azure -Scope CurrentUser -AllowPrerelease -Force -Verbose
+            Install-Module EnterprisePolicyAsCode -Scope CurrentUser -Force -Verbose
+            Export-AzPolicyResources -DefinitionsRootFolder ./ -Mode psrule -OutputFolder ./
+            Export-AzPolicyAssignmentRuleData -AssignmentFile ./psrule.assignment.json -OutputPath ./.ps-rule/policy-rules.Rule.jsonc -ErrorAction SilentlyContinue
+            Assert-PSRule -InputPath ./ -Module "PSRule.Rules.Azure" -Format File -OutputFormat NUnit3 -OutputPath results.xml -ErrorAction SilentlyContinue
+          azPSVersion: "latest"
