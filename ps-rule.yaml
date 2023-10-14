@@ -13,3 +13,6 @@ binding:
 rule:
   include:
     - Azure.Policy.*
+
+execution:
+  notProcessedWarning: false
