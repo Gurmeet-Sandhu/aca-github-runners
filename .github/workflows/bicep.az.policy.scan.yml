@@ -63,4 +63,5 @@ jobs:
       - name: print json file
         shell: bash
         run: |
+          jq . ./psrule.assignment.json
           jq . ./ps-rule/policy-rules.Rule.jsonc
