@@ -6,7 +6,7 @@
             "pacSelector": "psrule",
             "cloud": "AzureCloud",
             "tenantId": "f9e0ca1c-4a3c-4955-a7cf-a0fb217ff2d0", // Update with your tenant Id
-            "deploymentRootScope": "/subscriptions/34176af6-6df0-47ef-a8cb-99f46d66332c/resourceGroups/aca-ghr-test" // Update with the scope your resources will be deployed at
+            "deploymentRootScope": "/subscriptions/34176af6-6df0-47ef-a8cb-99f46d66332c" // Update with the scope your resources will be deployed at
         }
     ]
 }
