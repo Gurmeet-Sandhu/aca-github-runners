@@ -56,7 +56,7 @@ jobs:
             $Credential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $ApplicationId, $SecurePassword
             Connect-AzAccount -ServicePrincipal -TenantId $TenantId -Credential $Credential
             Export-AzPolicyResources -DefinitionsRootFolder ./ -Mode psrule -OutputFolder ./
-            Export-AzPolicyAssignmentRuleData -AssignmentFile ./psrule.assignment.json -OutputPath ./ps-rule/policy-rules.Rule.jsonc
+            Export-AzPolicyAssignmentRuleData -AssignmentFile ./psrule.assignment.json -OutputPath ./.ps-rule/policy-rules.Rule.jsonc
             Assert-PSRule -InputPath ./az-policy-scan/ -Module "PSRule.Rules.Azure" -Format File -OutputFormat Csv -OutputPath exceptions.csv
           azPSVersion: "latest"
       
@@ -64,4 +64,5 @@ jobs:
         shell: bash
         run: |
           jq . ./psrule.assignment.json
-          jq . ./ps-rule/policy-rules.Rule.jsonc
+          echo "Printing policy-rules.Rule.jsonc"
+          jq . ./.ps-rule/policy-rules.Rule.jsonc
