@@ -1,5 +1,10 @@
 configuration:
+  # Enable automatic expansion of Azure parameter files.
+  AZURE_PARAMETER_FILE_EXPANSION: true
+
+  # Enable automatic expansion of Azure Bicep source files.
   AZURE_BICEP_FILE_EXPANSION: true
+  AZURE_BICEP_PARAMS_FILE_EXPANSION: true
 
 # Configure binding options
 binding:
@@ -9,6 +14,10 @@ binding:
   targetType:
     - ResourceType
     - type
+
+output:
+  culture:
+    - 'en-US'
 
 rule:
   include:
