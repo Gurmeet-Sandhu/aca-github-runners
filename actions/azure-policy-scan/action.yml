@@ -3,17 +3,28 @@ description: 'Reusable Azure Policy Scan Workflow'
 
 inputs:
   scopes:
-    description: 'Full identifier of one or more azure reources, resource groups and subscription to be scanned for compliance'
+    description: 'Line separated list of full identifier of one or more azure reources, resource groups and subscription to be scanned for compliance'
     required: true
   scopes-ignore:
-    description: 'Full identifier of one or more azure resources, resource groups and subscription to be ignored for compliance scan'
+    description: 'Line separated list of full identifier of one or more azure resources, resource groups and subscription to be ignored for compliance scan'
     required: false
+    default: ''
   policy-assignment-ignore:
-    description: 'Full identifier for one or more policy assignment ids for which compliance state will be ignored'
+    description: 'Line separted list of full identifier for one or more policy assignment ids for which compliance state will be ignored'
     required: false
+    default: ''
+  wait:
+    description: 'If sets to true, action will wait for compliance scan to complete and succeed or fail based on compliance state. If sets to false, the action will trigger compliance and succeed immediately'
+    required: false
+    default: true
+  skip-report:
+    description: 'If false, the action will upload a CSV file containing a list of resources that are non-compliant after the triggered scan is complete'
+    required: false
+    default: false
   report-name:
     description: 'The filename for the CSV containing a list of resources that are non-compliant after triggered scan is completed'
     required: false
+    default: 'compliance-report'
 
 runs:
   using: "composite"
@@ -21,9 +32,13 @@ runs:
     - name: Check for resource compliance
       uses: azure/policy-compliance-scan@v0
       with:
-        scopes: |
-          ${{ inputs.scopes}}
+        scopes: ${{ inputs.scopes }}
+        scopes-ignore: ${{ inputs.scopes-ignore }}
+        policy-assignments-ignore: ${{ inputs.policy-assignments-ignore }}
+        wait: ${{ inputs.wait }}
+        skip-report: ${{ inputs.skip-report }}
         report-name: ${{ inputs.report-name }}
+
         
 
 
