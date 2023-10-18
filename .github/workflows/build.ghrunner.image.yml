@@ -22,11 +22,11 @@ jobs:
     
     - name: Login to ACR
       run: |
-        az acr login --name ghracr.azurecr.io
+        az acr login --name ghaacr.azurecr.io
 
     - name: build and publish Docker Image
       run: |
         cd ${{ github.workspace }}/github-runner/
-        docker build -t ghracr.azurecr.io/github-runner:v1 .
-        docker push ghracr.azurecr.io/github-runner:v1
+        docker build -t ghaacr.azurecr.io/github-runner:v1 .
+        docker push ghaacr.azurecr.io/github-runner:v1
 
