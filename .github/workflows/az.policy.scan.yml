@@ -8,7 +8,7 @@ env:
   AZURE_LOCATION: westus2
 
 jobs:
-  deploy:
+  scan:
     runs-on: ubuntu-latest
 
     steps:
