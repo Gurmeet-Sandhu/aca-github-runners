@@ -9,10 +9,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: install az cli
-        run: |
-          curl -sL https://aka.ms/InstallAzureCLIDeb | bash
-
       - name: install bicep CLI
         run: |
           curl -Lo bicep https://github.com/Azure/bicep/releases/latest/download/bicep-linux-x64
