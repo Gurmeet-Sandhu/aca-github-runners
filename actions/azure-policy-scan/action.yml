@@ -38,9 +38,3 @@ runs:
         wait: ${{ inputs.wait }}
         skip-report: ${{ inputs.skip-report }}
         report-name: ${{ inputs.report-name }}
-
-        
-
-
-
-        
