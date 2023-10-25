@@ -21,16 +21,21 @@ resource name_resource 'Microsoft.App/containerApps@2023-05-01' = {
   properties: {
     environmentId: environment.id
     configuration: {
-      secrets: [
-        {
-          name: 'pat'
-          value: pat
-        }
-        {
-          name: 'registry-password'
-          value: registry_password
-        }
-      ]
+      ingress: {
+        allowInsecure: false
+        external: true
+        targetPort: 80
+      }
+      // secrets: [
+      //   {
+      //     name: 'pat'
+      //     value: pat
+      //   }
+      //   {
+      //     name: 'registry-password'
+      //     value: registry_password
+      //   }
+      // ]
       registries: [
         {
           passwordSecretRef: 'registry-password'
@@ -44,22 +49,22 @@ resource name_resource 'Microsoft.App/containerApps@2023-05-01' = {
       containers: [
         {
           name: 'gh-runner-image'
-          image: 'ghaacr.azurecr.io/github-runner:v1'
-          command: []
-          env: [
-            {
-              name: 'GHUSER'
-              value: 'Gurmeet-Sandhu'
-            }
-            {
-              name: 'REPO'
-              value: 'aca-github-runners'
-            }
-            {
-              name: 'PAT'
-              secretRef: 'pat'
-            }
-          ]
+          image: 'mcr.microsoft.com/azuredocs/containerapps-helloworld:latest'
+          // command: []
+          // env: [
+          //   {
+          //     name: 'GHUSER'
+          //     value: 'Gurmeet-Sandhu'
+          //   }
+          //   {
+          //     name: 'REPO'
+          //     value: 'aca-github-runners'
+          //   }
+          //   {
+          //     name: 'PAT'
+          //     secretRef: 'pat'
+          //   }
+          // ]
           resources: {
               cpu: json('1.0')
               memory: '2.0Gi'
