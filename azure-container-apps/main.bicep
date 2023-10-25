@@ -98,7 +98,7 @@ param workspaceLocation string = 'westus2'
 resource environment 'Microsoft.App/managedEnvironments@2023-05-01' = {
   name: environmentName
   location: location
-  kind: 'Workload profiles'
+  kind: 'workload-profiles'
   properties: {
     appLogsConfiguration: {
       destination: 'log-analytics'
