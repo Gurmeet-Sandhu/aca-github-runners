@@ -107,14 +107,6 @@ resource environment 'Microsoft.App/managedEnvironments@2023-05-01' = {
         sharedKey: listKeys('Microsoft.OperationalInsights/workspaces/${workspaceName}', '2022-10-01').primarySharedKey
       }
     }
-    workloadProfiles: [
-      {
-        maximumCount: 2
-        minimumCount: 1
-        name: 'test-worload-profile'
-        workloadProfileType: 'consumption'
-      }
-    ]
   }
   dependsOn: [
     workspace
