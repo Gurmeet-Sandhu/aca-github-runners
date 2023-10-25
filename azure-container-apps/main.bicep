@@ -2,11 +2,11 @@ param name string = 'gha-runner'
 param location string = 'westus2'
 // param environmentId string
 
-@secure()
-param pat string
+// @secure()
+// param pat string
 
-@secure()
-param registry_password string
+// @secure()
+// param registry_password string
 param environmentName string = 'gha-runner-env'
 param workspaceName string = 'gha-runner-ws'
 param workspaceLocation string = 'westus2'
