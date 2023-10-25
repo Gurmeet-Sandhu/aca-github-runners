@@ -6,7 +6,7 @@ param location string = 'westus2'
 param pat string
 
 @secure()
-param registry_password string
+//param registry_password string
 param environmentName string = 'gha-runner-env'
 param workspaceName string = 'gha-runner-ws'
 param workspaceLocation string = 'westus2'
@@ -98,7 +98,6 @@ param workspaceLocation string = 'westus2'
 resource environment 'Microsoft.App/managedEnvironments@2023-05-01' = {
   name: environmentName
   location: location
-  kind: 'workload-profiles'
   properties: {
     appLogsConfiguration: {
       destination: 'log-analytics'
@@ -107,6 +106,12 @@ resource environment 'Microsoft.App/managedEnvironments@2023-05-01' = {
         sharedKey: listKeys('Microsoft.OperationalInsights/workspaces/${workspaceName}', '2022-10-01').primarySharedKey
       }
     }
+    workloadProfiles: [
+      {
+        name: 'Consumption'
+        workloadProfileType: 'Consumption'
+      }
+    ]
   }
   dependsOn: [
     workspace
