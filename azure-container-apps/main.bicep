@@ -7,121 +7,130 @@ param pat string
 
 @secure()
 param registry_password string
-// param environmentName string = 'gha-runner-env'
-// param workspaceName string = 'gha-runner-ws'
-// param workspaceLocation string = 'westus2'
+param environmentName string = 'gha-runner-env'
+param workspaceName string = 'gha-runner-ws'
+param workspaceLocation string = 'westus2'
 
 // var repos = [
 //   'aca-github-runners'
 // ]
 
-resource name_resource 'Microsoft.App/containerApps@2023-05-01' = {
-  name: name
-  location: location
-  properties: {
-    environmentId: '/subscriptions/34176af6-6df0-47ef-a8cb-99f46d66332c/resourceGroups/aca-ghr-test/providers/Microsoft.App/managedEnvironments/gha-runner-env'
-    configuration: {
-      secrets: [
-        {
-          name: 'pat'
-          value: pat
-        }
-        {
-          name: 'registry-password'
-          value: registry_password
-        }
-      ]
-      registries: [
-        {
-          passwordSecretRef: 'registry-password'
-          server: 'ghaacr.azurecr.io'
-          username: 'ghaacr'
-        }
-      ]
-      activeRevisionsMode: 'Single'
-    }
-    template: {
-      containers: [
-        {
-          name: 'gh-runner-image'
-          image: 'ghaacr.azurecr.io/github-runner:v1'
-          command: []
-          env: [
-            {
-              name: 'GHUSER'
-              value: 'Gurmeet-Sandhu'
-            }
-            {
-              name: 'REPO'
-              value: 'aca-github-runners'
-            }
-            {
-              name: 'PAT'
-              secretRef: 'pat'
-            }
-          ]
-          resources: {
-              cpu: json('1.0')
-              memory: '2.0Gi'
-          }
-      }
-      ]
-      scale: {
-        minReplicas: 1
-        // maxReplicas: 5
-        // rules: [
-        //   {
-        //     custom:{
-        //       auth: [
-        //         {
-        //           secretRef: 'pat'
-        //           triggerParameter: 'personalAccessToken'
-        //         }
-        //       ]
-        //       metadata: {
-        //         owner: 'Gurmeet-Sandhu'
-        //         runnerScope: 'repo'
-        //         repos : repos
-        //       }
-        //       type: 'github-runner'
-        //     }
-        //   }
-        // ]
-      }
-    }
-  }
-  dependsOn: [
-    
-  ]
-}
-
-// resource environment 'Microsoft.App/managedEnvironments@2023-05-01' = {
-//   name: environmentName
+// resource name_resource 'Microsoft.App/containerApps@2023-05-01' = {
+//   name: name
 //   location: location
 //   properties: {
-//     appLogsConfiguration: {
-//       destination: 'log-analytics'
-//       logAnalyticsConfiguration: {
-//         customerId: reference('Microsoft.OperationalInsights/workspaces/${workspaceName}', '2022-10-01').customerId
-//         sharedKey: listKeys('Microsoft.OperationalInsights/workspaces/${workspaceName}', '2022-10-01').primarySharedKey
+//     environmentId: environment.id
+//     configuration: {
+//       secrets: [
+//         {
+//           name: 'pat'
+//           value: pat
+//         }
+//         {
+//           name: 'registry-password'
+//           value: registry_password
+//         }
+//       ]
+//       registries: [
+//         {
+//           passwordSecretRef: 'registry-password'
+//           server: 'ghaacr.azurecr.io'
+//           username: 'ghaacr'
+//         }
+//       ]
+//       activeRevisionsMode: 'Single'
+//     }
+//     template: {
+//       containers: [
+//         {
+//           name: 'gh-runner-image'
+//           image: 'ghaacr.azurecr.io/github-runner:v1'
+//           command: []
+//           env: [
+//             {
+//               name: 'GHUSER'
+//               value: 'Gurmeet-Sandhu'
+//             }
+//             {
+//               name: 'REPO'
+//               value: 'aca-github-runners'
+//             }
+//             {
+//               name: 'PAT'
+//               secretRef: 'pat'
+//             }
+//           ]
+//           resources: {
+//               cpu: json('1.0')
+//               memory: '2.0Gi'
+//           }
+//       }
+//       ]
+//       scale: {
+//         minReplicas: 1
+//         // maxReplicas: 5
+//         // rules: [
+//         //   {
+//         //     custom:{
+//         //       auth: [
+//         //         {
+//         //           secretRef: 'pat'
+//         //           triggerParameter: 'personalAccessToken'
+//         //         }
+//         //       ]
+//         //       metadata: {
+//         //         owner: 'Gurmeet-Sandhu'
+//         //         runnerScope: 'repo'
+//         //         repos : repos
+//         //       }
+//         //       type: 'github-runner'
+//         //     }
+//         //   }
+//         // ]
 //       }
 //     }
 //   }
 //   dependsOn: [
-//     workspace
+    
 //   ]
 // }
 
-// resource workspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
-//   name: workspaceName
-//   location: workspaceLocation
-//   properties: {
-//     sku: {
-//       name: 'PerGB2018'
-//     }
-//     retentionInDays: 30
-//     workspaceCapping: {
-//     }
-//   }
-//   dependsOn: []
-// }
+resource environment 'Microsoft.App/managedEnvironments@2023-05-01' = {
+  name: environmentName
+  location: location
+  kind: 'Workload profiles'
+  properties: {
+    appLogsConfiguration: {
+      destination: 'log-analytics'
+      logAnalyticsConfiguration: {
+        customerId: reference('Microsoft.OperationalInsights/workspaces/${workspaceName}', '2022-10-01').customerId
+        sharedKey: listKeys('Microsoft.OperationalInsights/workspaces/${workspaceName}', '2022-10-01').primarySharedKey
+      }
+    }
+    workloadProfiles: [
+      {
+        maximumCount: 2
+        minimumCount: 1
+        name: 'test-worload-profile'
+        workloadProfileType: 'consumption'
+      }
+    ]
+  }
+  dependsOn: [
+    workspace
+  ]
+}
+
+resource workspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
+  name: workspaceName
+  location: workspaceLocation
+  properties: {
+    sku: {
+      name: 'PerGB2018'
+    }
+    retentionInDays: 30
+    workspaceCapping: {
+    }
+  }
+  dependsOn: []
+}
