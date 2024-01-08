@@ -28,7 +28,6 @@ jobs:
           mkdir ${{ github.workspace }}/packaged
           zip -r ${{ github.workspace }}/packaged/packaged.zip ${{ github.workspace }}/ghr-func-app/
         shell: pwsh
-        working-directory: dist
 
       - name: Archive App
         uses: actions/upload-artifact@v2
