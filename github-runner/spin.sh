@@ -1,12 +1,12 @@
 #!/bin/bash
-GHUSER=$GHUSER
-REPO=$REPO
+ORG=$ORG
 PAT=$PAT
+LABELS=$LABELS
 
 RUNNER_NAME="RUNNER-$(hostname)"
-TOKEN=$(curl -sX POST -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${PAT}" https://api.github.com/repos/${GHUSER}/${REPO}/actions/runners/registration-token | jq .token --raw-output)
-cd /home/runner
-./config.sh --unattended --url https://github.com/${GHUSER}/${REPO} --token ${TOKEN} --name ${RUNNER_NAME} --ephemeral --disableupdate
+TOKEN=$(curl -sX POST -H "Accept: application/vnd.github.v3+json" -H "Authorization: token ${PAT}" https://api.github.com/orgs/${ORG}/actions/runners/registration-token | jq .token --raw-output)
+cd /home/runner/actions-runner
+./config.sh --unattended --url https://github.com/${ORG} --token ${TOKEN} --name ${RUNNER_NAME} --labels ${LABELS} --runnergroup aca-runners --ephemeral --disableupdate
 
 cleanup() {
     echo "Removing runner..."

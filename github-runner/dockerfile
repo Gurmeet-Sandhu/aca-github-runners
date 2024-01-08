@@ -1,26 +1,9 @@
 FROM ubuntu:focal
 
-ARG DUMB_INIT_VERSION="1.2.2"
-# ARG GIT_CORE_PPA_KEY="A1715D88E1DF1F24"
-
-ENV GIT_LFS_VERSION="3.2.0"
-ENV LANG=en_US.UTF-8
-ENV LANGUAGE=en_US.UTF-8
-ENV LC_ALL=en_US.UTF-8
-# SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ENV DEBIAN_FRONTEND=noninteractive
-# hadolint ignore=SC2086,DL3015,DL3008,DL3013,SC2015
 
-COPY dependencies.sh /home/runner/
-RUN chmod +x /home/runner/dependencies.sh
-RUN /home/runner/dependencies.sh
-
-RUN echo en_US.UTF-8 UTF-8 >> /etc/locale.gen \
-  && apt-get update \
-  && apt-get install -y --no-install-recommends gnupg \
-#   && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ${GIT_CORE_PPA_KEY} \
-  && apt-get update \
-  && apt-get install -y --no-install-recommends \
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
     gnupg \
     lsb-release \
     curl \
@@ -46,11 +29,19 @@ RUN echo en_US.UTF-8 UTF-8 >> /etc/locale.gen \
     python3-pip \
     python3-setuptools \
     python3 \
-    dumb-init \
     nodejs \
     rsync \
     libpq-dev \
-    gosu 
+    gosu \
+    apt-utils \
+    git-all \
+    vim \
+    symlinks \
+    sshpass
+
+COPY dependencies.sh ./dependencies.sh
+RUN chmod +x ./dependencies.sh \
+    && ./dependencies.sh
 
 ##### Install Azure CLI #####
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
@@ -68,16 +59,6 @@ RUN apt-get update \
     && apt-get update \
     && apt-get install -y powershell
 
-##### Install git #####
-RUN apt-get update \
-    && ( apt-get install -y --no-install-recommends git || apt-get install -t stable -y --no-install-recommends git || apt-get install -y --no-install-recommends git=1:2.33.1-0ppa1~ubuntu18.04.1 git-man=1:2.33.1-0ppa1~ubuntu18.04.1 ) \
-    && ( [[ $(apt-cache search -n liblttng-ust0 | awk '{print $1}') == "liblttng-ust0" ]] && apt-get install -y --no-install-recommends liblttng-ust0 || : ) \
-    && ( [[ $(apt-cache search -n liblttng-ust1 | awk '{print $1}') == "liblttng-ust1" ]] && apt-get install -y --no-install-recommends liblttng-ust1 || : ) \
-    && ( ( curl "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip" -o "awscliv2.zip" && unzip awscliv2.zip -d /tmp/ && /tmp/aws/install && rm awscliv2.zip) || pip3 install --no-cache-dir awscli )
-
-#### Install git-lfs package ####
-RUN ( curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash && apt-get install -y git-lfs)
-
 ##### Install Docker Engine on Ubuntu #####
 
 # Add Docker's official GPG Key:
@@ -92,11 +73,6 @@ RUN echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/d
 # Install Docker Packages 
 RUN apt-get install -y docker-ce docker-ce-cli docker-buildx-plugin containerd.io docker-compose-plugin --no-install-recommends --allow-unauthenticated
 
-RUN echo -e '#!/bin/sh\ndocker compose --compatibility "$@"' > /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose \
-    && ( [[ "${LSB_RELEASE_CODENAME}" == "focal" ]] && ( echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/ /" | tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list && curl -L "https://build.opensuse.org/projects/devel:kubic/public_key" | apt-key add -; echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/ /" | tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list && curl -L "https://build.opensuse.org/projects/devel:kubic/public_key" | apt-key add - && apt-get update) || : ) \
-    && ( [[ "${LSB_RELEASE_CODENAME}" == "focal" || "${LSB_RELEASE_CODENAME}" == "jammy" || "${LSB_RELEASE_CODENAME}" == "sid" || "${LSB_RELEASE_CODENAME}" == "bullseye" ]] && apt-get install -y --no-install-recommends podman buildah skopeo || : ) \
-    && ( [[ "${LSB_RELEASE_CODENAME}" == "jammy" ]] && echo "Ubuntu Jammy is marked as beta. Please see https://github.com/actions/virtual-environments/issues/5490" || : )
-
 ###### Install GitHub CLI ######
 RUN type -p curl >/dev/null || (apt update && apt install curl -y) \
     && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
@@ -105,24 +81,40 @@ RUN type -p curl >/dev/null || (apt update && apt install curl -y) \
     && apt update \
     && apt install gh -y
 
+###### Install .NET SDK ########
+RUN wget https://packages.microsoft.com/config/ubuntu/20.04/packages-microsoft-prod.deb -O packages-microsoft-prod.deb \
+    && dpkg -i packages-microsoft-prod.deb \
+    && rm packages-microsoft-prod.deb
+
+RUN apt-get update \
+    && apt-get install -y dotnet-sdk-8.0
+
+###### Install JDK 11 and maven #######
+
+RUN apt-get update \
+    && apt-get install -y default-jdk maven
+
+
 RUN rm -rf /var/lib/apt/lists/* \
-    && rm -rf /tmp/* \
-    && groupadd -g 121 runner \
+    && rm -rf /tmp/* 
+
+RUN groupadd -g 121 runner \
     && useradd -mr -d /home/runner -u 1001 -g 121 runner \
     && usermod -aG sudo runner \
     && usermod -aG docker runner \
-    && echo '%sudo ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
-    && ( [[ -f /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list ]] && rm /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list || : )
-
+    && echo '%sudo ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers 
 
 RUN cd /home/runner && mkdir actions-runner && cd actions-runner \
-    && curl -O -L https://github.com/actions/runner/releases/download/v2.309.0/actions-runner-linux-x64-2.309.0.tar.gz \
-    && tar xzf ./actions-runner-linux-x64-2.309.0.tar.gz
+    && curl -O -L https://github.com/actions/runner/releases/download/v2.311.0/actions-runner-linux-x64-2.311.0.tar.gz \
+    && tar xzf ./actions-runner-linux-x64-2.311.0.tar.gz
+
+# RUN cp /etc/environment /home/runner/actions-runner/.env
 
 RUN chown -R runner ~runner && /home/runner/actions-runner/bin/installdependencies.sh
 
-ADD spin.sh spin.sh
-RUN chmod +x spin.sh
+COPY entrypoint.sh ./entrypoint.sh
+RUN chmod +x ./entrypoint.sh
 # set the user to "runner" so all subsequent commands are run as the runner user
 USER runner
-ENTRYPOINT ["./spin.sh"]
+
+ENTRYPOINT ["./entrypoint.sh"]

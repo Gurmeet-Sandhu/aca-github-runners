@@ -1,0 +1,60 @@
+name: deploy function
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  build-app:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Node.js version
+        uses: actions/setup-node@v1
+        with:
+          node-version: '18.x'
+
+      - name: npm install, build, and test
+        run: |
+          cd ${{ github.workspace }}/ghr-func-app/
+          npm install
+          npm run build:prod --if-present
+          npm run test --if-present
+
+      # You can also make use of a ZIP GitHub Action
+      - name: "Create ZIP"
+        run: |
+          mkdir ${{ github.workspace }}/packaged
+          zip -r ${{ github.workspace }}/packaged/packaged.zip ${{ github.workspace }}/ghr-func-app/
+        shell: pwsh
+        working-directory: dist
+
+      - name: Archive App
+        uses: actions/upload-artifact@v2
+        with:
+          name: node-app
+          path: ${{ github.workspace }}/packaged
+
+  deploy:
+    runs-on: ubuntu-latest
+    environment: deploy
+    if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' }}
+    needs: [build-app]
+    
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v2
+        with:
+          name: node-app
+          path: node-app
+
+      - name: Login to Azure
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - run: |
+          az functionapp deployment source config-zip --name ghrscaletest --resource-group logic-app-test --src node-app/packaged.zip --verbose
+        shell: pwsh
+      
