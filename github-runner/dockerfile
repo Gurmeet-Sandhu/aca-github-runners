@@ -1,62 +1,128 @@
-# Source: https://github.com/dotnet/dotnet-docker
-FROM mcr.microsoft.com/dotnet/runtime-deps:6.0-jammy as build
+FROM ubuntu:focal
 
-ARG TARGETOS=linux
-ARG TARGETARCH=x64
-ARG RUNNER_VERSION=2.309.0
-ARG RUNNER_CONTAINER_HOOKS_VERSION=0.4.0
-ARG DOCKER_VERSION=24.0.6
+ARG DUMB_INIT_VERSION="1.2.2"
+# ARG GIT_CORE_PPA_KEY="A1715D88E1DF1F24"
 
-RUN apt update -y && apt install curl unzip -y
-
-WORKDIR /actions-runner
-RUN export RUNNER_ARCH=${TARGETARCH} \
-    && if [ "$RUNNER_ARCH" = "amd64" ]; then export RUNNER_ARCH=x64 ; fi \
-    && curl -f -L -o runner.tar.gz https://github.com/actions/runner/releases/download/v${RUNNER_VERSION}/actions-runner-${TARGETOS}-${RUNNER_ARCH}-${RUNNER_VERSION}.tar.gz \
-    && tar xzf ./runner.tar.gz \
-    && rm runner.tar.gz
-
-RUN curl -f -L -o runner-container-hooks.zip https://github.com/actions/runner-container-hooks/releases/download/v${RUNNER_CONTAINER_HOOKS_VERSION}/actions-runner-hooks-k8s-${RUNNER_CONTAINER_HOOKS_VERSION}.zip \
-    && unzip ./runner-container-hooks.zip -d ./k8s \
-    && rm runner-container-hooks.zip
-
-RUN export RUNNER_ARCH=${TARGETARCH} \
-    && if [ "$RUNNER_ARCH" = "amd64" ]; then export DOCKER_ARCH=x86_64 ; fi \
-    && if [ "$RUNNER_ARCH" = "arm64" ]; then export DOCKER_ARCH=aarch64 ; fi \
-    && if [ "$RUNNER_ARCH" = "x64" ]; then export DOCKER_ARCH=x86_64 ; fi \
-    && curl -fLo docker.tgz https://download.docker.com/${TARGETOS}/static/stable/${DOCKER_ARCH}/docker-${DOCKER_VERSION}.tgz \
-    && tar zxvf docker.tgz \
-    && rm -rf docker.tgz
-
-FROM mcr.microsoft.com/dotnet/runtime-deps:6.0-jammy
-
+ENV GIT_LFS_VERSION="3.2.0"
+ENV LANG=en_US.UTF-8
+ENV LANGUAGE=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+# SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ENV DEBIAN_FRONTEND=noninteractive
-ENV RUNNER_MANUALLY_TRAP_SIG=1
-ENV ACTIONS_RUNNER_PRINT_LOG_TO_STDOUT=1
+# hadolint ignore=SC2086,DL3015,DL3008,DL3013,SC2015
 
-RUN apt-get update -y \
-    && apt-get install -y --no-install-recommends \
-    sudo \
+COPY dependencies.sh /home/runner/
+RUN chmod +x /home/runner/dependencies.sh
+RUN /home/runner/dependencies.sh
+
+RUN echo en_US.UTF-8 UTF-8 >> /etc/locale.gen \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends gnupg \
+#   && apt-key adv --keyserver keyserver.ubuntu.com --recv-keys ${GIT_CORE_PPA_KEY} \
+  && apt-get update \
+  && apt-get install -y --no-install-recommends \
+    gnupg \
     lsb-release \
-    jq \
     curl \
-    && rm -rf /var/lib/apt/lists/*
+    tar \
+    unzip \
+    zip \
+    apt-transport-https \
+    ca-certificates \
+    sudo \
+    gpg-agent \
+    software-properties-common \
+    build-essential \
+    zlib1g-dev \
+    zstd \
+    gettext \
+    libcurl4-openssl-dev \
+    inetutils-ping \
+    jq \
+    wget \
+    dirmngr \
+    openssh-client \
+    locales \
+    python3-pip \
+    python3-setuptools \
+    python3 \
+    dumb-init \
+    nodejs \
+    rsync \
+    libpq-dev \
+    gosu 
 
-RUN adduser --disabled-password --gecos "" --uid 1001 runner \
-    && groupadd docker --gid 123 \
+##### Install Azure CLI #####
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+
+##### Install Bicep #####
+RUN az bicep install
+
+##### Install Powershell #####
+RUN apt-get update \
+    && apt-get install -y wget apt-transport-https software-properties-common \
+    && . /etc/os-release \
+    && wget -q https://packages.microsoft.com/config/ubuntu/$VERSION_ID/packages-microsoft-prod.deb \
+    && dpkg -i packages-microsoft-prod.deb \
+    && rm packages-microsoft-prod.deb \
+    && apt-get update \
+    && apt-get install -y powershell
+
+##### Install git #####
+RUN apt-get update \
+    && ( apt-get install -y --no-install-recommends git || apt-get install -t stable -y --no-install-recommends git || apt-get install -y --no-install-recommends git=1:2.33.1-0ppa1~ubuntu18.04.1 git-man=1:2.33.1-0ppa1~ubuntu18.04.1 ) \
+    && ( [[ $(apt-cache search -n liblttng-ust0 | awk '{print $1}') == "liblttng-ust0" ]] && apt-get install -y --no-install-recommends liblttng-ust0 || : ) \
+    && ( [[ $(apt-cache search -n liblttng-ust1 | awk '{print $1}') == "liblttng-ust1" ]] && apt-get install -y --no-install-recommends liblttng-ust1 || : ) \
+    && ( ( curl "https://awscli.amazonaws.com/awscli-exe-linux-$(uname -m).zip" -o "awscliv2.zip" && unzip awscliv2.zip -d /tmp/ && /tmp/aws/install && rm awscliv2.zip) || pip3 install --no-cache-dir awscli )
+
+#### Install git-lfs package ####
+RUN ( curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash && apt-get install -y git-lfs)
+
+##### Install Docker Engine on Ubuntu #####
+
+# Add Docker's official GPG Key:
+RUN install -m 0755 -d /etc/apt/keyrings \
+    && curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg \
+    && chmod a+r /etc/apt/keyrings/docker.gpg
+
+# Add the repository to Apt sources:
+RUN echo "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | tee /etc/apt/sources.list.d/docker.list > /dev/null \
+    && apt-get update
+
+# Install Docker Packages 
+RUN apt-get install -y docker-ce docker-ce-cli docker-buildx-plugin containerd.io docker-compose-plugin --no-install-recommends --allow-unauthenticated
+
+RUN echo -e '#!/bin/sh\ndocker compose --compatibility "$@"' > /usr/local/bin/docker-compose && chmod +x /usr/local/bin/docker-compose \
+    && ( [[ "${LSB_RELEASE_CODENAME}" == "focal" ]] && ( echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/ /" | tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list && curl -L "https://build.opensuse.org/projects/devel:kubic/public_key" | apt-key add -; echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/xUbuntu_20.04/ /" | tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list && curl -L "https://build.opensuse.org/projects/devel:kubic/public_key" | apt-key add - && apt-get update) || : ) \
+    && ( [[ "${LSB_RELEASE_CODENAME}" == "focal" || "${LSB_RELEASE_CODENAME}" == "jammy" || "${LSB_RELEASE_CODENAME}" == "sid" || "${LSB_RELEASE_CODENAME}" == "bullseye" ]] && apt-get install -y --no-install-recommends podman buildah skopeo || : ) \
+    && ( [[ "${LSB_RELEASE_CODENAME}" == "jammy" ]] && echo "Ubuntu Jammy is marked as beta. Please see https://github.com/actions/virtual-environments/issues/5490" || : )
+
+###### Install GitHub CLI ######
+RUN type -p curl >/dev/null || (apt update && apt install curl -y) \
+    && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+    && apt update \
+    && apt install gh -y
+
+RUN rm -rf /var/lib/apt/lists/* \
+    && rm -rf /tmp/* \
+    && groupadd -g 121 runner \
+    && useradd -mr -d /home/runner -u 1001 -g 121 runner \
     && usermod -aG sudo runner \
     && usermod -aG docker runner \
-    && echo "%sudo   ALL=(ALL:ALL) NOPASSWD:ALL" > /etc/sudoers \
-    && echo "Defaults env_keep += \"DEBIAN_FRONTEND\"" >> /etc/sudoers
+    && echo '%sudo ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers \
+    && ( [[ -f /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list ]] && rm /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list || : )
 
-WORKDIR /home/runner
 
-COPY --chown=runner:docker --from=build /actions-runner .
+RUN cd /home/runner && mkdir actions-runner && cd actions-runner \
+    && curl -O -L https://github.com/actions/runner/releases/download/v2.309.0/actions-runner-linux-x64-2.309.0.tar.gz \
+    && tar xzf ./actions-runner-linux-x64-2.309.0.tar.gz
 
-RUN install -o root -g root -m 755 docker/* /usr/bin/ && rm -rf docker
+RUN chown -R runner ~runner && /home/runner/actions-runner/bin/installdependencies.sh
 
 ADD spin.sh spin.sh
 RUN chmod +x spin.sh
-
+# set the user to "runner" so all subsequent commands are run as the runner user
 USER runner
 ENTRYPOINT ["./spin.sh"]

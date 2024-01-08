@@ -36,13 +36,13 @@ resource name_resource 'Microsoft.App/containerApps@2023-05-01' = {
       //     value: registry_password
       //   }
       // ]
-      registries: [
-        {
-          passwordSecretRef: 'registry-password'
-          server: 'ghaacr.azurecr.io'
-          username: 'ghaacr'
-        }
-      ]
+      // registries: [
+      //   {
+      //     passwordSecretRef: 'registry-password'
+      //     server: 'ghaacr.azurecr.io'
+      //     username: 'ghaacr'
+      //   }
+      // ]
       activeRevisionsMode: 'Single'
     }
     template: {
