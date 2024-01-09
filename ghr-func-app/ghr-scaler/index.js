@@ -19,7 +19,7 @@ module.exports = async function (context, req) {
             await queueClient.sendMessage(Buffer.from(message).toString('base64'));
         } else if (githubEvent.action === 'completed') {
             // Retrieve all messages to find the one corresponding to the completed job
-            let response = await queueClient.receiveMessages();
+            let response = await queueClient.receiveMessages(32);
             if (response.receivedMessageItems.length > 0) {
                 for (let message of response.receivedMessageItems) {
                     if (message.messageText.includes(`Job ${githubEvent.workflow_job.id}`)) {
