@@ -22,8 +22,9 @@ module.exports = async function (context, req) {
             let response = await queueClient.receiveMessages(32);
             if (response.receivedMessageItems.length > 0) {
                 for (let message of response.receivedMessageItems) {
-                    context.log(`the message text is ${message.messageText}`);
-                    if (message.messageText.includes(`Job ${githubEvent.workflow_job.id}`)) {
+                    let decodedMsg = Buffer.from(message.messageText, "base64");
+                    context.log(`the message text is ${decodedMsg}`);
+                    if (decodedMsg.includes(`Job ${githubEvent.workflow_job.id}`)) {
                         // Delete the specific message corresponding to the completed job
                         await queueClient.deleteMessage(message.messageId, message.popReceipt);
                         break;
