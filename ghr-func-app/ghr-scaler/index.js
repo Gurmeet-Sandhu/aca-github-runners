@@ -25,7 +25,7 @@ module.exports = async function (context, req) {
             // Retrieve all messages to find the one corresponding to the completed job
             let response = await queueClient.receiveMessages({
                 numberOfMessages: 10,
-                visibilityTimeout: 60
+                visibilityTimeout: 5
             });
             if (response.receivedMessageItems.length > 0) {
                 for (let message of response.receivedMessageItems) {
