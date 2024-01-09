@@ -19,7 +19,10 @@ module.exports = async function (context, req) {
             await queueClient.sendMessage(Buffer.from(message).toString('base64'));
         } else if (githubEvent.action === 'completed') {
             // Retrieve all messages to find the one corresponding to the completed job
-            let response = await queueClient.receiveMessages(32);
+            let response = await queueClient.receiveMessages({
+                numberOfMessages: 32,
+                visibilityTimeout: 30
+            });
             if (response.receivedMessageItems.length > 0) {
                 for (let message of response.receivedMessageItems) {
                     let decodedMsg = Buffer.from(message.messageText, "base64");
