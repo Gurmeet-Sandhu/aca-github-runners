@@ -15,13 +15,17 @@ module.exports = async function (context, req) {
 
         if (githubEvent.action === 'queued') {
             // Enqueue a message with job ID
+            context.log(`job ${githubEvent.workflow_job.id} is Queued`)
             const message = `Job ${githubEvent.workflow_job.id} is queued.`;
             await queueClient.sendMessage(Buffer.from(message).toString('base64'));
+        } else if(githubEvent.action === 'in_progress'){
+            context.log(`job ${githubEvent.workflow_job.id} is In-Progress`)
         } else if (githubEvent.action === 'completed') {
+            context.log(`job ${githubEvent.workflow_job.id} is Completed`)
             // Retrieve all messages to find the one corresponding to the completed job
             let response = await queueClient.receiveMessages({
-                numberOfMessages: 32,
-                visibilityTimeout: 30
+                numberOfMessages: 10,
+                visibilityTimeout: 60
             });
             if (response.receivedMessageItems.length > 0) {
                 for (let message of response.receivedMessageItems) {
