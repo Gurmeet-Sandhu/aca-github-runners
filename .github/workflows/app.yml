@@ -26,8 +26,9 @@ jobs:
       - name: "Create ZIP"
         run: |
           mkdir ${{ github.workspace }}/packaged
-          zip -r ${{ github.workspace }}/packaged/packaged.zip ${{ github.workspace }}/ghr-func-app/
+          zip -r ${{ github.workspace }}/packaged/packaged.zip *
         shell: pwsh
+        working-directory: ./ghr-func-app
 
       - name: Archive App
         uses: actions/upload-artifact@v2
